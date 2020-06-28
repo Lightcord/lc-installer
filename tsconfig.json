@@ -1,0 +1,10 @@
+{
+    "compilerOptions": {
+        "noImplicitAny": false,
+        "module": "CommonJS",
+        "target": "ES2017",
+        "outDir": "./dist",
+        "resolveJsonModule": true,
+        "rootDir": "./src"
+    }
+}
