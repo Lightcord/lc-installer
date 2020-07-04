@@ -1,5 +1,5 @@
 {
-  "name": "lightcordinstaller",
+  "name": "lcinstall",
   "version": "1.0.0",
   "description": "An installer for Lightcord Client https://github.com/Lightcord/Lightcord",
   "main": "dist/index.js",
@@ -42,5 +42,8 @@
   "bugs": {
     "url": "https://github.com/Lightcord/LightcordInstaller/issues"
   },
-  "homepage": "https://github.com/Lightcord/LightcordInstaller#readme"
+  "homepage": "https://github.com/Lightcord/LightcordInstaller#readme",
+  "bin": {
+    "lcinstall": "./bin/lcinstall"
+  }
 }
