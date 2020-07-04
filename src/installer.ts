@@ -164,7 +164,7 @@ export async function getAsset(assets:Release["assets"]):Promise<Release["assets
         size: 157188332,
         browser_download_url: "http://127.0.0.1/img/lightcord-win32-ia32_7.zip"
     } as Release["assets"][0]*/
-    let asset = assets.find(e => e.name.toLowerCase().startsWith("bandagedbd_"+platform) && e.name.endsWith(".zip"))
+    let asset = assets.find(e => e.name.toLowerCase().startsWith("lightcord-"+platform) && e.name.endsWith(".zip"))
     if(!asset){
         logger.error(`Couldn't find a matching asset. Make sure your platform (${platform}) is supported. Contact us on ${DiscordLink} for more help.`)
         if(platform === "mac"){
@@ -173,7 +173,7 @@ export async function getAsset(assets:Release["assets"]):Promise<Release["assets
             logger.info("Android is not supported by Lightcord. We might drop a release on the Play Store/Expo. Please contact us to be sure "+DiscordLink)
         }
         logger.info(`Platform: \x1b[34m${platform}\x1b[0m`)
-        logger.info(`Requested file: \x1b[34mlightcord-${platform}-*.zip\x1b[0m`)
+        logger.info(`Requested file: \x1b[34mlightcord-${platform}*.zip\x1b[0m`)
         logger.info(`Found assets: ${assets.map(e => `\x1b[34m${e.name}\x1b[0m`).join(", ")}`)
         await pressAnyKeyToContinue()
         process.exit()

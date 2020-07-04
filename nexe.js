@@ -14,7 +14,7 @@ compile({
     console.log('success')
 })
 
-compile({
+/*compile({
     input: './webpack-dist/index.js',
     output: "LightcordSetup",
     name: "LightcordSetup",
@@ -26,4 +26,4 @@ compile({
     verbose: true
 }).then(() => {
     console.log('success')
-})
+})*/
