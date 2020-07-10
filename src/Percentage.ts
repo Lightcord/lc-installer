@@ -1,3 +1,5 @@
+import * as filesize from "filesize"
+
 const baseLog = `[\x1b[31mLightcord\x1b[0m] `
 
 export default class Percentage {
@@ -6,14 +8,20 @@ export default class Percentage {
         this.to = to
         this.actual = this.from
         this.format = format || Percentage.format
+        this.started = Date.now()
     }
 
     from:number = 0
     to:number = 0
     actual:number = 0
+    started:number = Date.now()
 
     static format(from:number, to:number):string{
-        return `${from}/${to} ${Math.floor((from / to) * 100)}%`
+        return `${filesize(from, {round: 1})}/${filesize(to, {round: 1})} ${Math.floor((from / to) * 100)}%`
+    }
+
+    get elapsedTime(){
+        return Date.now() - this.started
     }
 
     format: (from:number, to:number) => string

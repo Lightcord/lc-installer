@@ -77,7 +77,7 @@ export type Release = {
   }
 
 export async function getLatestReleaseInfos():Promise<Release>{
-    let url = `${githubConstants.baseUrl}/repos/${githubConstants.repoID}/releases/latest`
+    let url = `${githubConstants.baseUrl}/repos/${githubConstants.repoID}/releases`
     logger.log(`Fetching latest release from \x1b[32m${url}\x1b[0m`)
 
     let res = await fetch(url).catch(e => [e]) as Response
@@ -87,14 +87,25 @@ export async function getLatestReleaseInfos():Promise<Release>{
         await pressAnyKeyToContinue()
         process.exit()
     }
-    return await res.json()
+    return (await res.json())[0]
 }
 
-export async function downloadFileToFile(url:string, path:string, onNewData: (length:number) => void = ()=>{}):Promise<void>{
+export async function downloadFileToFile(url:string, path:string, onNewData: (length:number) => void = ()=>{}, useLightcordServers=true):Promise<void>{
+    let originalURL = url
+    if(useLightcordServers){
+        // https://github.com/Lightcord/Lightcord/releases/download/v0.10.1/lightcord-linux-x64.zip
+        let fragments = url.split("/")
+        url = `https://lightcord.deroku.xyz/api/v1/gh/releases/${fragments[fragments.length - 6]}/${fragments[fragments.length - 5]}/${fragments[fragments.length - 2]}/${fragments[fragments.length - 1]}`
+    }
     logger.log(`Downloading \x1b[32m${url}\x1b[0m to ${path}`)
 
     let res = await fetch(url).catch(e => [e]) as Response
     if(isError(res)){
+        if(useLightcordServers){
+            logger.error(`Couldn't download the latest release from lightcord's servers, retrying on github.`)
+            logger.log(`You may experience longer downloading time.`)
+            return await downloadFileToFile(originalURL, path, onNewData, false)
+        }
         logger.error(`Couldn't download the latest release. Make sure you're connected to internet. Contact us on ${DiscordLink} for more help.`)
         logger.error(await formatFetchErrorResult(res))
         await pressAnyKeyToContinue()
