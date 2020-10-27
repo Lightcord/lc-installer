@@ -55,6 +55,11 @@ export async function download(){
     linuxLogger.log(`\x1b[32mFinished unzipping\x1b[0m. Moving \x1b[31mLightcord\x1b[0m and cleaning stuff`)
 
     let newPath = join(homedir(), "Lightcord")
+    if(fs.existsSync(newPath)){
+        linuxLogger.info(`Deleting actual Lightcord.`)
+        await fs.promises.rmdir(newPath, {recursive: true})
+    }
+    await fs.promises.mkdir(newPath)
     await moveFolder(folderPath, newPath)
     await fs.promises.rmdir(folderPath, {recursive: true})
     folderPath = newPath

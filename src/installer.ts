@@ -95,7 +95,7 @@ export async function downloadFileToFile(url:string, path:string, onNewData: (le
     if(useLightcordServers){
         // https://github.com/Lightcord/Lightcord/releases/download/v0.10.1/lightcord-linux-x64.zip
         let fragments = url.split("/")
-        url = `https://lightcord.deroku.xyz/api/v1/gh/releases/${fragments[fragments.length - 6]}/${fragments[fragments.length - 5]}/${fragments[fragments.length - 2]}/${fragments[fragments.length - 1]}`
+        url = `https://lightcord.org/api/v1/gh/releases/${fragments[fragments.length - 6]}/${fragments[fragments.length - 5]}/${fragments[fragments.length - 2]}/${fragments[fragments.length - 1]}`
     }
     logger.log(`Downloading \x1b[32m${url}\x1b[0m to ${path}`)
 

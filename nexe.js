@@ -1,29 +1,42 @@
 const { compile } = require('nexe')
 
-compile({
-    input: './webpack-dist/index.js',
-    output: "LightcordSetup.exe",
-    name: "LightcordSetup",
-    cwd: __dirname,
-    build: false,
-    targets: [
-        "windows-x86-"+process.version
-    ],
-    verbose: true
-}).then(() => {
-    console.log('success')
-})
+let sources = [
+    {
+        production: true,
+        platform: "windows",
+        arch: "x86"
+    },
+    {
+        production: false,
+        platform: "windows",
+        arch: "x86"
+    },
+    {
+        production: true,
+        platform: "linux",
+        arch: "x86"
+    },
+    {
+        production: false,
+        platform: "linux",
+        arch: "x86"
+    },
+]
 
-/*compile({
-    input: './webpack-dist/index.js',
-    output: "LightcordSetup",
-    name: "LightcordSetup",
-    cwd: __dirname,
-    build: false,
-    targets: [
-        "linux-x86-"+process.version
-    ],
-    verbose: true
-}).then(() => {
-    console.log('success')
-})*/
+;(async () => {
+    for(let source of sources){
+        console.info(`Compiling ${source.production?"production":"development"} for ${source.platform}`)
+        await compile({
+            input: `./webpack-dist/${source.production?"index":"dev"}.js`,
+            output: `LightcordSetup${source.production?"":"-dev"}${source.platform==="windows"?".exe":""}`,
+            name: "LightcordSetup",
+            cwd: __dirname,
+            build: false,
+            targets: [
+                source.platform+"-"+source.arch+"-"+process.version
+            ],
+            verbose: true
+        })
+        console.log(`Successfully compiled for ${source.platform}`)
+    }
+})()

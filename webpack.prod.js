@@ -35,7 +35,8 @@ module.exports = {
     plugins: [
         new webpack.DefinePlugin({
             'process.env.isWebpack': true,
-            'process.env.installerVersion': JSON.stringify(require("./package.json").version)
+            'process.env.installerVersion': JSON.stringify(require("./package.json").version),
+            'process.env.isDev': false
         })
     ],
     externals: getKeyMirror([

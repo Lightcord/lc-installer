@@ -1,6 +1,7 @@
 import * as extensions from "./extensions"
 import Logger from "./Logger"
-import { DiscordLink, platform, githubConstants, repoLink } from "./installer"
+import { DiscordLink, platform, repoLink } from "./installer"
+import { pressAnyKeyToContinue } from "./pressKey"
 extensions.patch()
 
 const isMain = require.main === module
@@ -24,6 +25,7 @@ switch(platform){
         installer.start(isMain).catch((err) => {
             console.error(err)
             console.log(`An error occured in the main process. Please refer to \x1b[33mhttps://github.com/Lightcord/LightcordInstaller\x1b[0m to how to solve it or join our Discord ${DiscordLink}`)
+            pressAnyKeyToContinue()
         })
         break
     case "linux":
@@ -33,9 +35,11 @@ switch(platform){
         .catch((err) => {
             console.error(err)
             console.log(`An error occured in the main process. Please refer to \x1b[33mhttps://github.com/Lightcord/LightcordInstaller\x1b[0m to how to solve it or join our Discord ${DiscordLink}`)
+            pressAnyKeyToContinue()
         })
         break
 
     default:
         console.log(`Uh oh, it looks like your platform \x1b[33m${platform}\x1b[0m is not supported. Learn how to build from source on ${repoLink}`)
+        pressAnyKeyToContinue()
 }

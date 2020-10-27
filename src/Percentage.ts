@@ -20,7 +20,7 @@ export default class Percentage {
         return `${filesize(from, {round: 1})}/${filesize(to, {round: 1})} ${Math.floor((from / to) * 100)}%`
     }
 
-    get elapsedTime(){
+    getElapsedTime(){
         return Date.now() - this.started
     }
 
