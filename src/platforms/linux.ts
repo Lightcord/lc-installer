@@ -3,13 +3,10 @@ import Logger from "../Logger"
 import { downloadPath, getLatestReleaseInfos, downloadFileToFile, getAsset, unzipFile } from "../installer"
 import * as path from "path"
 import Percentage from "../Percentage"
-import { moveFolder } from "../fsutil"
 import { join } from "path"
 import * as spawn from "cross-spawn"
 import { pressAnyKeyToContinue } from "../pressKey"
-import { exec } from "child_process"
 import { Menu, defaultItems } from "../menus/Menu"
-import { open } from "../linkOpener"
 import { homedir } from "os"
 
 const linuxLogger = new Logger("linux")
@@ -45,9 +42,7 @@ export async function download(){
 
     await fs.promises.mkdir(path.dirname(downloadPath), {recursive: true})
     let percentage = new Percentage(0, asset.size)
-    await downloadFileToFile(asset.browser_download_url, downloadPath, length => {
-        percentage.update(length)
-    })
+    await downloadFileToFile(asset.browser_download_url, downloadPath)
 
     linuxLogger.log(`Unzipping... This may take some minutes at worst`)
     let folderPath = await unzipFile(downloadPath)
@@ -60,7 +55,7 @@ export async function download(){
         await fs.promises.rmdir(newPath, {recursive: true})
     }
     await fs.promises.mkdir(newPath)
-    await moveFolder(folderPath, newPath)
+    await fs.promises.rename(folderPath, newPath)
     await fs.promises.rmdir(folderPath, {recursive: true})
     folderPath = newPath
 
@@ -69,7 +64,7 @@ export async function download(){
     linuxLogger.log(`\x1b[32mFinished moving, launching...\x1b[0m`)
     let exePath = path.join(folderPath, "Lightcord")
 
-    await new Promise((resolve, reject) => {
+    await new Promise<void>((resolve, reject) => {
         let child = spawn.spawn(exePath, {
             detached: true
         })

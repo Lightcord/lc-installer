@@ -155,14 +155,15 @@ export const defaultItems = [
     {
         id: "discord",
         label: "Join Our Discord",
-        onClick(){
+        async onClick(){
             open(DiscordLink.replace(/\x1b\[\d+m/g, ""))
         }
     },
     {
         id: "close",
         label: "Quit",
-        onClick(){
+        async onClick(){
+            console.clear()
             process.exit()
         }
     }

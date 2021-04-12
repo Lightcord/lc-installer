@@ -24,7 +24,7 @@ switch(platform){
         installer = require("./platforms/win32")
         installer.start(isMain).catch((err) => {
             console.error(err)
-            console.log(`An error occured in the main process. Please refer to \x1b[33mhttps://github.com/Lightcord/LightcordInstaller\x1b[0m to how to solve it or join our Discord ${DiscordLink}`)
+            console.log(`An error occured in the main process. Please \x1b[33mhttps://github.com/Lightcord/lc-installer\x1b[0m join our Discord ${DiscordLink} for help.`)
             pressAnyKeyToContinue()
         })
         break
@@ -34,7 +34,7 @@ switch(platform){
         installer.start(isMain)
         .catch((err) => {
             console.error(err)
-            console.log(`An error occured in the main process. Please refer to \x1b[33mhttps://github.com/Lightcord/LightcordInstaller\x1b[0m to how to solve it or join our Discord ${DiscordLink}`)
+            console.log(`An error occured in the main process. Please \x1b[33mhttps://github.com/Lightcord/lc-installer\x1b[0m join our Discord ${DiscordLink} for help.`)
             pressAnyKeyToContinue()
         })
         break

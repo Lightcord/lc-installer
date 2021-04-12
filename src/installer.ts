@@ -1,11 +1,15 @@
 import getAppDataPath from "appdata-path";
-import { join, basename, dirname as _dirname } from "path";
+import { join, basename, dirname as _dirname, dirname } from "path";
 import Logger from "./Logger";
 import { fetch } from "./api";
 import { pressAnyKeyToContinue } from "./pressKey";
 import { Response } from "node-fetch";
 import * as yauzl from "yauzl"
-import { createWriteStream, WriteStream, promises, mkdirSync } from "fs";
+import { createWriteStream, WriteStream, mkdirSync } from "fs";
+import { Downloader } from "bongodl"
+import * as byteSize from "byte-size"
+import {promises as fs} from "fs";
+import Percentage from "./Percentage";
 
 export const repoLink = "https://github.com/Lightcord/Lightcord"
 export const releaseLink = repoLink + "/releases"
@@ -90,41 +94,84 @@ export async function getLatestReleaseInfos():Promise<Release>{
     return (await res.json())[0]
 }
 
-export async function downloadFileToFile(url:string, path:string, onNewData: (length:number) => void = ()=>{}, useLightcordServers=true):Promise<void>{
+export async function downloadFileToFile(url:string, path:string, useLightcordServers=true, useBongo=true):Promise<void>{
     let originalURL = url
-    if(useLightcordServers){
-        // https://github.com/Lightcord/Lightcord/releases/download/v0.10.1/lightcord-linux-x64.zip
-        let fragments = url.split("/")
-        url = `https://lightcord.org/api/v1/gh/releases/${fragments[fragments.length - 6]}/${fragments[fragments.length - 5]}/${fragments[fragments.length - 2]}/${fragments[fragments.length - 1]}`
+    // https://github.com/Lightcord/Lightcord/releases/download/v0.10.1/lightcord-linux-x64.zip
+    let fragments = url.split("/")
+    url = `https://lightcord.org/api/v1/gh/releases/${fragments[fragments.length - 6]}/${fragments[fragments.length - 5]}/${fragments[fragments.length - 2]}/${fragments[fragments.length - 1]}`
+    if(!useLightcordServers){
+        url = originalURL
     }
+    // Bongodl manifest
+    const manifest = url+".manifest"
     logger.log(`Downloading \x1b[32m${url}\x1b[0m to ${path}`)
 
-    let res = await fetch(url).catch(e => [e]) as Response
-    if(isError(res)){
-        if(useLightcordServers){
-            logger.error(`Couldn't download the latest release from lightcord's servers, retrying on github.`)
-            logger.log(`You may experience longer downloading time.`)
-            return await downloadFileToFile(originalURL, path, onNewData, false)
-        }
-        logger.error(`Couldn't download the latest release. Make sure you're connected to internet. Contact us on ${DiscordLink} for more help.`)
-        logger.error(await formatFetchErrorResult(res))
-        await pressAnyKeyToContinue()
-        process.exit()
-    }
-    return await new Promise((resolve, reject) => {
-        let stream = createWriteStream(path)
-        res.body
-        .on("data", (data) => {
-            stream.write(data)
-            onNewData(data.length)
-        }).on("end", () => {
-            stream.end()
-            resolve()
-        }).on("error", (err) => {
-            stream.end()
-            reject(err)
+    if(useBongo){
+        await new Promise<void>((resolve, reject) => {
+            new Downloader({
+                manifest_url: manifest,
+                emitStatus: true,
+                concurrent: 10
+            }).on("status", status => {
+                const progress40 = Math.round(status.ratio*40)
+                let progress = `\x1b[47m${" ".repeat(progress40)}\x1b[40m${" ".repeat(40-progress40)}`
+                let percentage = status.percentage.toFixed(2)
+                const numberLength = percentage.split(".")[0].length
+                if(numberLength < 2){
+                    percentage = "0"+percentage
+                }
+                process.stdout.write(`\x1b[2K\x1b[0G[\x1b[31mLightcord\x1b[0m] [${progress}] ${byteSize(status.downloaded)}/${byteSize(status.total)} ${percentage}%`)
+            }).on("end", async filepath => {
+                process.stdout.write("\x1b[2K\x1b[0G")
+                await fs.rename(filepath, path)
+                await fs.rmdir(dirname(filepath), {recursive: true})
+                resolve()
+            }).on("error", err => {
+                process.stdout.write("\x1b[2K\x1b[0G")
+                console.error(err)
+                logger.error(`Couldn't download the latest release from lightcord's servers, retrying...`)
+                downloadFileToFile(originalURL, path, useLightcordServers, false).then(resolve, reject)
+            })
         })
-    })
+    }else{
+        let res = await fetch(url).catch(e => [e]) as Response
+        if(isError(res)){
+            if(useLightcordServers){
+                logger.error(`Couldn't download the latest release from lightcord's servers, retrying on github.`)
+                logger.log(`You may experience longer downloading time.`)
+                return await downloadFileToFile(originalURL, path, false, false)
+            }
+            logger.error(`Couldn't download the latest release. Make sure you're connected to internet. Contact us on ${DiscordLink} for more help.`)
+            logger.error(await formatFetchErrorResult(res))
+            await pressAnyKeyToContinue()
+            process.exit()
+        }
+        return await new Promise((resolve, reject) => {
+            const sizestr = res.headers.get("content-length")
+            let size:number
+            if(sizestr){
+                size = parseInt(sizestr)
+            }
+            if(isNaN(size)){
+                // 137 mb size of lightcord as of now
+                size = 137.7*10**6
+            }
+            const percentage = new Percentage(0, size)
+            let stream = createWriteStream(path)
+            res.body
+            .on("data", (data) => {
+                stream.write(data)
+                percentage.update(data.length)
+            }).on("end", () => {
+                process.stdout.write("\x1b[2K\x1b[0G")
+                stream.end()
+                resolve()
+            }).on("error", (err) => {
+                stream.end()
+                reject(err)
+            })
+        })
+    }
 }
 
 export async function unzipFile(file:string):Promise<string>{

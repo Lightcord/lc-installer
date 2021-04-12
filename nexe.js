@@ -14,12 +14,12 @@ let sources = [
     {
         production: true,
         platform: "linux",
-        arch: "x86"
+        arch: "x64"
     },
     {
         production: false,
         platform: "linux",
-        arch: "x86"
+        arch: "x64"
     },
 ]
 
@@ -33,7 +33,7 @@ let sources = [
             cwd: __dirname,
             build: false,
             targets: [
-                source.platform+"-"+source.arch+"-"+process.version
+                source.platform+"-"+source.arch+"-12.13.1"
             ],
             verbose: true
         })
